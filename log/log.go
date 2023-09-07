@@ -16,7 +16,7 @@ func SetupLogging(path string) (err error) {
 		}
 	}
 
-	out, err := writers(path)
+	out, err := writer(path)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func SetupLogging(path string) (err error) {
 	return nil
 }
 
-func writers(p string) (io.Writer, error) {
+func writer(p string) (io.Writer, error) {
 	if err := os.MkdirAll(path.Dir(p), 0777); err != nil {
 		return nil, fmt.Errorf("could not create containerscale directory: %v", err)
 	}
@@ -34,8 +34,7 @@ func writers(p string) (io.Writer, error) {
 		return nil, fmt.Errorf("could not open log file: %v", err)
 	}
 
-	out := io.MultiWriter(os.Stderr, file)
-	return out, nil
+	return file, nil
 }
 
 func defaultPath() (string, error) {

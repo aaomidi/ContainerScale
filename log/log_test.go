@@ -22,7 +22,7 @@ func TestDefaultPath(t *testing.T) {
 	}
 }
 
-func TestWriters(t *testing.T) {
+func TestWriter(t *testing.T) {
 	tests := []struct {
 		name      string
 		path      string
@@ -42,9 +42,9 @@ func TestWriters(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := writers(tc.path)
+			_, err := writer(tc.path)
 			if (err != nil) != tc.expectErr {
-				t.Errorf("writers() expected error: %v, got %v", tc.expectErr, err)
+				t.Errorf("writer() expected error: %v, got %v", tc.expectErr, err)
 			}
 		})
 	}
