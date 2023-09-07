@@ -1,6 +1,6 @@
 module github.com/aaomidi/containerscale
 
-go 1.21.0
+go 1.21
 
 require (
 	github.com/containernetworking/cni v1.1.2
