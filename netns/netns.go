@@ -1,3 +1,4 @@
+// Package netns is responsible for finding and switching to network namespaces.
 package netns
 
 import (

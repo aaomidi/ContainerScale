@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	// TODO: Allow the logging path to be configurable.
 	if err := clog.SetupLogging(""); err != nil {
 		panic("unable to setup logging")
 	}

@@ -1,3 +1,4 @@
+// Package log sets up the global logger that logs to a file.
 package log
 
 import (

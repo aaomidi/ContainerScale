@@ -1,6 +1,8 @@
+// Package cni implements a CNI plugin that starts tailscale sessions for containers using it.
 package cni
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aaomidi/containerscale/secret"
@@ -10,7 +12,6 @@ import (
 	current "github.com/containernetworking/cni/pkg/types/100"
 	"github.com/containernetworking/cni/pkg/version"
 	"log"
-	"time"
 )
 
 type Config struct {
@@ -36,7 +37,6 @@ func Enable() {
 				log.Printf("%s-%s errored: %v", action, args.ContainerID, err)
 				return err
 			}
-			time.Sleep(1 * time.Second)
 			return nil
 		}
 	}
@@ -57,7 +57,7 @@ func cmdAdd(input *skel.CmdArgs) error {
 		return err
 	}
 
-	if err := ts.CreateSession(ts.CreateSessionRequest{
+	if err := ts.CreateSession(context.Background(), ts.CreateSessionRequest{
 		ContainerID:          input.ContainerID,
 		NetworkNamespacePath: input.Netns,
 		AuthKey:              config.RuntimeConfig.AuthKey,

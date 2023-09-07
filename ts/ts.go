@@ -1,6 +1,8 @@
+// Package ts is responsible for managing tailscale sessions
 package ts
 
 import (
+	"context"
 	"fmt"
 	"github.com/aaomidi/containerscale/cli"
 	"github.com/aaomidi/containerscale/netns"
@@ -12,6 +14,7 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"time"
 )
 
 type CreateSessionRequest struct {
@@ -22,7 +25,7 @@ type CreateSessionRequest struct {
 	TailscaleFlags       []string
 }
 
-func CreateSession(req CreateSessionRequest) error {
+func CreateSession(ctx context.Context, req CreateSessionRequest) error {
 	var err error
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -40,14 +43,14 @@ func CreateSession(req CreateSessionRequest) error {
 				return fmt.Errorf("failed to set ns: %v", err)
 			}
 
-			if err := tailscaled(req.ContainerID, req.TailscaledFlags); err != nil {
+			if err := tailscaled(ctx, req.ContainerID, req.TailscaledFlags); err != nil {
 				return fmt.Errorf("failed to start tailscaled: %v", err)
 			}
 
-			if err := tailscale(req.ContainerID, req.AuthKey, req.TailscaleFlags); err != nil {
+			if err := tailscale(ctx, req.ContainerID, req.AuthKey, req.TailscaleFlags); err != nil {
 				return fmt.Errorf("failed to start tailscale: %v", err)
 			}
-
+			time.Sleep(1 * time.Second)
 			return nil
 		}()
 	}()
@@ -55,7 +58,7 @@ func CreateSession(req CreateSessionRequest) error {
 	return err
 }
 
-func tailscale(containerID string, authKey secret.PrivateString, flags []string) error {
+func tailscale(ctx context.Context, containerID string, authKey secret.PrivateString, flags []string) error {
 	socket := socket(containerID)
 	defaultFlags := []string{
 		"--socket", socket,
@@ -68,15 +71,15 @@ func tailscale(containerID string, authKey secret.PrivateString, flags []string)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}
-	cli.LoggingCommand(cmd)
+	cli.LoggingCommand(ctx, cmd)
 
-	if err := cli.Execute(cmd); err != nil {
+	if err := cli.Execute(cmd, true); err != nil {
 		return err
 	}
 	return nil
 }
 
-func tailscaled(containerID string, flags []string) error {
+func tailscaled(ctx context.Context, containerID string, flags []string) error {
 	socket := socket(containerID)
 	state := path.Join(dir(containerID), "tailscaled.state")
 	defaultFlags := []string{
@@ -89,9 +92,10 @@ func tailscaled(containerID string, flags []string) error {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}
-	cli.LoggingCommand(cmd)
+	cli.LoggingCommand(ctx, cmd)
 
-	if err := cli.Execute(cmd); err != nil {
+	// This is a daemon, no need to wait.
+	if err := cli.Execute(cmd, false); err != nil {
 		return err
 	}
 	return nil
