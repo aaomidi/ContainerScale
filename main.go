@@ -9,6 +9,5 @@ func main() {
 	if err := clog.SetupLogging(""); err != nil {
 		panic("unable to setup logging")
 	}
-
 	cni.Enable()
 }
