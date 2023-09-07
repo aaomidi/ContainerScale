@@ -20,7 +20,9 @@ type Config struct {
 }
 
 type RuntimeConfig struct {
-	AuthKey secret.PrivateString `json:"authKey"`
+	AuthKey         secret.PrivateString `json:"authKey"`
+	TailscaledFlags []string             `json:"tailscaledFlags"`
+	TailscaleFlags  []string             `json:"tailscaleFlags"`
 }
 
 type cniFunc func(_ *skel.CmdArgs) error
@@ -55,7 +57,13 @@ func cmdAdd(input *skel.CmdArgs) error {
 		return err
 	}
 
-	if err := ts.StartSession(input.ContainerID, input.Netns, config.RuntimeConfig.AuthKey); err != nil {
+	if err := ts.CreateSession(ts.CreateSessionRequest{
+		ContainerID:          input.ContainerID,
+		NetworkNamespacePath: input.Netns,
+		AuthKey:              config.RuntimeConfig.AuthKey,
+		TailscaledFlags:      config.RuntimeConfig.TailscaledFlags,
+		TailscaleFlags:       config.RuntimeConfig.TailscaleFlags,
+	}); err != nil {
 		return fmt.Errorf("unable to start session: %v", err)
 	}
 

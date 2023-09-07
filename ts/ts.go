@@ -14,7 +14,15 @@ import (
 	"syscall"
 )
 
-func StartSession(containerID, nsPath string, authKey secret.PrivateString) error {
+type CreateSessionRequest struct {
+	ContainerID          string
+	NetworkNamespacePath string
+	AuthKey              secret.PrivateString
+	TailscaledFlags      []string
+	TailscaleFlags       []string
+}
+
+func CreateSession(req CreateSessionRequest) error {
 	var err error
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -24,7 +32,7 @@ func StartSession(containerID, nsPath string, authKey secret.PrivateString) erro
 			log.Println("Starting tailscale session")
 			runtime.LockOSThread()
 
-			nsHandle, err := netns.Path(nsPath)
+			nsHandle, err := netns.Path(req.NetworkNamespacePath)
 			if err != nil {
 				return fmt.Errorf("failed to get ns: %v", err)
 			}
@@ -32,11 +40,11 @@ func StartSession(containerID, nsPath string, authKey secret.PrivateString) erro
 				return fmt.Errorf("failed to set ns: %v", err)
 			}
 
-			if err := tailscaled(containerID); err != nil {
+			if err := tailscaled(req.ContainerID, req.TailscaledFlags); err != nil {
 				return fmt.Errorf("failed to start tailscaled: %v", err)
 			}
 
-			if err := tailscale(containerID, authKey); err != nil {
+			if err := tailscale(req.ContainerID, req.AuthKey, req.TailscaleFlags); err != nil {
 				return fmt.Errorf("failed to start tailscale: %v", err)
 			}
 
@@ -47,9 +55,16 @@ func StartSession(containerID, nsPath string, authKey secret.PrivateString) erro
 	return err
 }
 
-func tailscale(containerID string, authKey secret.PrivateString) error {
+func tailscale(containerID string, authKey secret.PrivateString, flags []string) error {
 	socket := socket(containerID)
-	cmd := exec.Command("tailscale", "--socket", socket, "up", "--authkey", authKey.AccessPrivateString())
+	defaultFlags := []string{
+		"--socket", socket,
+		"up",
+		"--authkey", authKey.AccessPrivateString(),
+	}
+	flags = append(defaultFlags, flags...)
+
+	cmd := exec.Command("tailscale", flags...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}
@@ -61,11 +76,16 @@ func tailscale(containerID string, authKey secret.PrivateString) error {
 	return nil
 }
 
-func tailscaled(containerID string) error {
+func tailscaled(containerID string, flags []string) error {
 	socket := socket(containerID)
 	state := path.Join(dir(containerID), "tailscaled.state")
+	defaultFlags := []string{
+		"--socket", socket,
+		"--statedir", state,
+	}
+	flags = append(defaultFlags, flags...)
 
-	cmd := exec.Command("tailscaled", "--socket", socket, "--statedir", state)
+	cmd := exec.Command("tailscaled", flags...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Setpgid: true,
 	}
