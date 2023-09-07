@@ -14,16 +14,32 @@ go build -o /opt/cni/bin/containerscale
 
 ## Configuration
 
-### Flags
+### Available Flags
 
+The flags you can use to configure the plugin is:
 ```
 AuthKey         Required  Authentication key from tailscale. 
 TailscaledFlags Optional  Extra flags to run with `tailscaled`
 TailscaleFlags  Optional  Extra flags to run with `tailscale up`
 ```
 
+### Docker
+
+Docker does not use [CNI]. Support for a docker network plugin is tracked in #1.
+
 ### Podman
-You will need to create a new `conflist` network configuration. You can do this at the user level.
+#### Netavark
+
+[Netavark] is a new networking model that the Podman team is adopting as the default networking system. Support for a [Netavark] plugin is tracked in #2.
+
+#### CNI
+First you need to make sure that Podman is running with CNI networking:
+
+1. Open `/etc/containers/container.conf`. 
+2. Find the line that starts with `#network_backend`. 
+3. Uncomment it and change it to `network_backend = "cni"`.
+
+Second, you need to create a new network configuration. You can do this at the user level.
 
 ```bash
 touch ~/.config/cni/net.d/99-containerscale.conflist
@@ -88,4 +104,9 @@ Example Configuration:
 }
 ```
 
+## Kubernetes
+
+This should just work with Kubernetes as well. I have not tried it yet. Work to improve documentation for kubernetes is tracked in #3.
+
 [CNI]: https://github.com/containernetworking/cni
+[Netavark]: https://github.com/containers/netavark
