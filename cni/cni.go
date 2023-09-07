@@ -3,11 +3,14 @@ package cni
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/aaomidi/containerscale/secret"
+	"github.com/aaomidi/containerscale/ts"
 	"github.com/containernetworking/cni/pkg/skel"
 	"github.com/containernetworking/cni/pkg/types"
 	current "github.com/containernetworking/cni/pkg/types/100"
 	"github.com/containernetworking/cni/pkg/version"
 	"log"
+	"time"
 )
 
 type Config struct {
@@ -16,14 +19,8 @@ type Config struct {
 	RuntimeConfig RuntimeConfig `json:"runtimeConfig"`
 }
 
-type PrivateString string
-
-func (PrivateString) String() string {
-	return "private"
-}
-
 type RuntimeConfig struct {
-	AuthKey PrivateString `json:"authKey"`
+	AuthKey secret.PrivateString `json:"authKey"`
 }
 
 type cniFunc func(_ *skel.CmdArgs) error
@@ -37,6 +34,7 @@ func Enable() {
 				log.Printf("%s-%s errored: %v", action, args.ContainerID, err)
 				return err
 			}
+			time.Sleep(1 * time.Second)
 			return nil
 		}
 	}
@@ -55,6 +53,10 @@ func cmdAdd(input *skel.CmdArgs) error {
 	config, err := parseConfig(input.StdinData)
 	if err != nil {
 		return err
+	}
+
+	if err := ts.StartSession(input.ContainerID, input.Netns, config.RuntimeConfig.AuthKey); err != nil {
+		return fmt.Errorf("unable to start session: %v", err)
 	}
 
 	return types.PrintResult(&current.Result{}, config.CNIVersion)
