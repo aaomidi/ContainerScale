@@ -25,12 +25,12 @@ TailscaleFlags  Optional  Extra flags to run with `tailscale up`
 
 ### Docker
 
-Docker does not use [CNI]. Support for a docker network plugin is tracked in #1.
+Docker does not use [CNI]. Support for a docker network plugin is tracked in [#1].
 
 ### Podman
 #### Netavark
 
-[Netavark] is a new networking model that the Podman team is adopting as the default networking system. Support for a [Netavark] plugin is tracked in #2.
+[Netavark] is a new networking model that the Podman team is adopting as the default networking system. Support for a [Netavark] plugin is tracked in [#2].
 
 #### CNI
 First you need to make sure that Podman is running with CNI networking:
@@ -106,7 +106,11 @@ Example Configuration:
 
 ## Kubernetes
 
-This should just work with Kubernetes as well. I have not tried it yet. Work to improve documentation for kubernetes is tracked in #3.
+This should just work with Kubernetes as well. I have not tried it yet. Work to improve documentation for kubernetes is tracked in [#3].
+
+[#1]: https://github.com/aaomidi/ContainerScale/issues/1
+[#2]: https://github.com/aaomidi/ContainerScale/issues/2
+[#3]: https://github.com/aaomidi/ContainerScale/issues/3
 
 [CNI]: https://github.com/containernetworking/cni
 [Netavark]: https://github.com/containers/netavark
