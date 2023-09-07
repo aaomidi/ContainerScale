@@ -26,7 +26,7 @@ type RuntimeConfig struct {
 type cniFunc func(_ *skel.CmdArgs) error
 
 func Enable() {
-	// Wraps the cniFuncs with logs.
+	// Wraps the `cniFunc`s with logs.
 	withErr := func(action string, cb cniFunc) cniFunc {
 		return func(args *skel.CmdArgs) error {
 			log.Printf("cmdAdd for %s", args.ContainerID)
