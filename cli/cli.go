@@ -43,7 +43,7 @@ func loggingWriter(ctx context.Context) io.Writer {
 			case <-ctx.Done():
 				return
 			default:
-				// Technically this can cause the outer for loop from executing, but eh, probably not.
+				// Technically this can keep the outer for loop from executing, but eh, unlikely.
 				// Either way the caller is going to exit(0) before context gets called anyway.
 				for scanner.Scan() {
 					log.Println(scanner.Text())
