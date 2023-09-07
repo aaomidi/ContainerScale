@@ -1,18 +1,29 @@
 # ContainerScale
 
+Note: This plugin is currently in development. Configuration, build patterns, etc may all change before this is stable.
+
 A [CNI] plugin that connects containers to a Tailscale network. This means that as the container is created, they're added to your tsnet.
 
 It is intended that you would use a Tailscale `AuthKey` to automatically authenticate these containers on your tsnet.
 
-## Installation
+## Background
+
+There are three popular networking abstractions for containers. [CNI], [Netavark], and Docker networking. The eventual goal of this repository is to support all three of these networking abstractions. For now, this repository only supports [CNI].
+
+Different container runtimes support different networking abstractions:
+
+- Kubernetes: [CNI]
+- Podman: By default, [Netavark]. Can be configured to use [CNI] (for now).
+- Docker: Docker networking.
+
+## Setup & Configuration
 
 More detailed instructions are TBA, but the gist is:
 
 ```bash
+# Build the ContainerScale binary and drop it in a directory that CNI can find it.
 go build -o /opt/cni/bin/containerscale
 ```
-
-## Configuration
 
 ### Available Flags
 
