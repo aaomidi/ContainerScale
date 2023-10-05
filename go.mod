@@ -4,5 +4,5 @@ go 1.21
 
 require (
 	github.com/containernetworking/cni v1.1.2
-	golang.org/x/sys v0.12.0
+	golang.org/x/sys v0.13.0
 )
